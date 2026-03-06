@@ -1,0 +1,2695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文案优化平台 - PDCA闭环管理系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #165DFF;
+            --primary-light: #4080FF;
+            --primary-dark: #0E42C2;
+            --success: #00B42A;
+            --danger: #F53F3F;
+            --warning: #FF7D00;
+            --light: #F5F7FA;
+            --dark: #1D2129;
+            --gray: #86909C;
+            --light-gray: #F2F3F5;
+            --border: #E5E6EB;
+            --card-bg: #FFFFFF;
+            --shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: var(--card-bg);
+            color: var(--dark);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 24px 0;
+            box-shadow: var(--shadow);
+            border-right: 1px solid var(--border);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 32px;
+            font-size: 18px;
+            border-bottom: none;
+            color: var(--primary);
+            font-weight: 700;
+            padding: 0 24px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            padding: 14px 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sidebar li:hover {
+            background-color: rgba(22, 93, 255, 0.05);
+            color: var(--primary);
+        }
+
+        .sidebar li.active {
+            background-color: rgba(22, 93, 255, 0.1);
+            border-left-color: var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 240px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--dark);
+            margin-bottom: 24px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            font-weight: 600;
+        }
+
+        h3 {
+            color: var(--dark);
+            margin-bottom: 16px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 180px;
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--gray);
+            font-size: 13px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background-color: white;
+            color: var(--dark);
+            font-family: inherit;
+        }
+
+        input[type="text"]::placeholder,
+        textarea::placeholder {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .primary-button {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .primary-button:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        .secondary-button {
+            background-color: white;
+            color: var(--dark);
+            border-color: var(--border);
+        }
+
+        .secondary-button:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .success-button {
+            background-color: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .success-button:hover {
+            background-color: #23c343;
+            border-color: #23c343;
+        }
+
+        .danger-button {
+            background-color: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .danger-button:hover {
+            background-color: #ff7875;
+            border-color: #ff7875;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            border-radius: 6px;
+            color: #52c41a;
+        }
+
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+
+        .warning {
+            background-color: #fffbe6;
+            border: 1px solid #ffe58f;
+            color: #faad14;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        th {
+            background-color: var(--light-gray);
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 13px;
+        }
+
+        tr:hover {
+            background-color: var(--light);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-button {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .edit-button {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .edit-button:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        .delete-button {
+            background-color: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .delete-button:hover {
+            background-color: #ff7875;
+            border-color: #ff7875;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            flex: 1;
+            min-width: 160px;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        table th:first-child,
+        table td:first-child {
+            text-align: center;
+        }
+
+        .card .card {
+            margin-bottom: 0;
+            border: 1px solid var(--border);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 24px;
+            border-radius: 12px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card.success {
+            background: linear-gradient(135deg, var(--success) 0%, #009a2a 100%);
+        }
+
+        .stat-card.warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #e66f00 100%);
+        }
+
+        .stat-card.danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #d92d2d 100%);
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .trend {
+            font-size: 13px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-card .trend.up {
+            color: #d4ffd4;
+        }
+
+        .stat-card .trend.down {
+            color: #ffd4d4;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .pdca-section {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #d9e1ff;
+        }
+
+        .pdca-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .pdca-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .pdca-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .pdca-card .title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .pdca-card .desc {
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .prep-box {
+            background: #f8fffa;
+            border: 1px solid #a8e6cf;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .prep-title {
+            font-weight: 600;
+            color: #2da44e;
+            margin-bottom: 12px;
+        }
+
+        .prep-item {
+            margin-bottom: 12px;
+            padding-left: 16px;
+            border-left: 3px solid #2da44e;
+        }
+
+        .prep-item .label {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .prep-item .content {
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .template-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 93, 255, 0.1);
+        }
+
+        .template-card .name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .template-card .desc {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 12px;
+        }
+
+        .template-card .tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: var(--light);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .innovation-visual {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 24px;
+            background: linear-gradient(135deg, #fff8e6 0%, #fff5d6 100%);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .innovation-score {
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .innovation-score .number {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--warning);
+        }
+
+        .innovation-score .label {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .innovation-meter {
+            flex: 1;
+        }
+
+        .meter-bar {
+            height: 24px;
+            background: linear-gradient(90deg, var(--danger) 0%, var(--warning) 50%, var(--success) 100%);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .meter-indicator {
+            position: absolute;
+            width: 4px;
+            height: 32px;
+            background: var(--dark);
+            top: -4px;
+            border-radius: 2px;
+            transition: left 0.5s ease;
+        }
+
+        .meter-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .main-content {
+                margin-left: 200px;
+                padding: 20px;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pdca-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .innovation-visual {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>📊 文案优化平台</h2>
+        <ul>
+            <li class="active" onclick="showSection('dashboard-section')">🏠 数据概览</li>
+            <li onclick="showSection('input-section')">✍️ 文案录入</li>
+            <li onclick="showSection('manage-section')">📋 文案管理</li>
+            <li onclick="showSection('innovation-section')">💡 创新度评估</li>
+            <li onclick="showSection('review-section')">📈 文案复盘</li>
+            <li onclick="showSection('data-section')">📊 深度分析</li>
+            <li onclick="showSection('settings-section')">⚙️ 系统设置</li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="container">
+            <div id="dashboard-section">
+                <div class="page-header">
+                    <h1>📊 数据概览</h1>
+                    <div style="display: flex; gap: 12px;">
+                        <input type="date" id="dashboard-start-date" style="padding: 8px 12px;">
+                        <input type="date" id="dashboard-end-date" style="padding: 8px 12px;">
+                        <button class="primary-button" onclick="refreshDashboard()">刷新数据</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="label">总文案数</div>
+                        <div class="value" id="stat-total-copywritings">0</div>
+                        <div class="trend up">↑ 本月新增 12</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="label">总成交数</div>
+                        <div class="value" id="stat-total-conversions">0</div>
+                        <div class="trend up">↑ 环比 +15.3%</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="label">平均线索成本</div>
+                        <div class="value" id="stat-avg-cost">¥0</div>
+                        <div class="trend down">↓ 环比 -8.2%</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="label">平均创新度</div>
+                        <div class="value" id="stat-avg-innovation">0%</div>
+                        <div class="trend up">↑ 环比 +5.1%</div>
+                    </div>
+                </div>
+
+                <div class="pdca-section">
+                    <h3>🔄 PDCA 闭环管理体系</h3>
+                    <div class="pdca-grid">
+                        <div class="pdca-card">
+                            <div class="title">P - 计划</div>
+                            <div class="desc">制定文案策略，确定目标和指标</div>
+                        </div>
+                        <div class="pdca-card">
+                            <div class="title">D - 执行</div>
+                            <div class="desc">录入文案，投放测试，收集数据</div>
+                        </div>
+                        <div class="pdca-card">
+                            <div class="title">C - 检查</div>
+                            <div class="desc">分析数据，对比目标，评估效果</div>
+                        </div>
+                        <div class="pdca-card">
+                            <div class="title">A - 处理</div>
+                            <div class="desc">总结经验，优化策略，持续改进</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prep-box">
+                    <div class="prep-title">📌 今日结论 (PREP结构)</div>
+                    <div class="prep-item">
+                        <div class="label">结论 (Point)</div>
+                        <div class="content">高创新度文案的成交率比低创新度文案高 42%，建议持续加大创新文案投入。</div>
+                    </div>
+                    <div class="prep-item">
+                        <div class="label">理由 (Reason)</div>
+                        <div class="content">创新度 > 70% 的文案，平均线索成本降低 28%，有效率提升 35%。</div>
+                    </div>
+                    <div class="prep-item">
+                        <div class="label">例子 (Example)</div>
+                        <div class="content">张德团队的"无人自助卖点"系列文案，创新度 85%，线索成本仅 ¥23.5，成交率 12.8%。</div>
+                    </div>
+                    <div class="prep-item">
+                        <div class="label">结论 (Point)</div>
+                        <div class="content">结论：优先分配预算给高创新度、高成交率的文案类型和团队。</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>📈 成交趋势</h3>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>🎯 按编导统计</h3>
+                        <div class="chart-container">
+                            <canvas id="directorChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>📊 内容类型分布</h3>
+                        <div class="chart-container">
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>💡 创新度分布</h3>
+                        <div class="chart-container">
+                            <canvas id="innovationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="input-section" style="display: none;">
+                <div class="page-header">
+                    <h1>✍️ 文案录入</h1>
+                </div>
+                <div class="card">
+                    <h2>添加新文案</h2>
+                    <form id="copywriting-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="date">日期</label>
+                                <input type="date" id="date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="sequence">序号</label>
+                                <input type="text" id="sequence" placeholder="自动生成" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="status">文案状态</label>
+                                <select id="status" required>
+                                    <option value="X">新文案 (X)</option>
+                                    <option value="L">老文案 (L)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="director">编导</label>
+                                <select id="director" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editor">剪辑</label>
+                                <select id="editor" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="blogger">博主</label>
+                                <select id="blogger" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="content-type">内容类型</label>
+                                <select id="content-type" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="form">呈现形式</label>
+                                <select id="form" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="duration">时长</label>
+                                <select id="duration" required></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="content">文案内容</label>
+                            <textarea id="content" required></textarea>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="primary-button">提交</button>
+                            <button type="button" class="secondary-button" onclick="resetForm()">重置</button>
+                        </div>
+                    </form>
+                    <div id="form-message" class="result" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div id="manage-section" style="display: none;">
+                <div class="page-header">
+                    <h1>📋 文案管理</h1>
+                </div>
+                <div class="card">
+                    <div class="search-container">
+                        <input type="text" id="search-input" class="search-input" placeholder="搜索文案内容或编码">
+                        <button id="search-button" class="primary-button">搜索</button>
+                    </div>
+                    <div class="filter-container">
+                        <div class="filter-item">
+                            <label for="filter-date">日期</label>
+                            <input type="date" id="filter-date">
+                        </div>
+                        <div class="filter-item">
+                            <label for="filter-status">文案状态</label>
+                            <select id="filter-status">
+                                <option value="">全部</option>
+                                <option value="X">新文案</option>
+                                <option value="L">老文案</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label for="filter-director">编导</label>
+                            <select id="filter-director">
+                                <option value="">全部</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label for="filter-content-type">内容类型</label>
+                            <select id="filter-content-type">
+                                <option value="">全部</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="button-group" style="margin-bottom: 20px;">
+                        <button id="manage-batch-upload-button" class="primary-button">📤 批量上传文案</button>
+                        <button id="manage-batch-download-button" class="secondary-button">📥 批量下载文案</button>
+                        <button id="download-today-button" class="secondary-button">📅 下载当天文案</button>
+                        <button id="download-template-button" class="success-button">📋 下载上传模板</button>
+                        <input type="file" id="manage-batch-upload-input" style="display: none;" accept=".csv">
+                    </div>
+                    <div class="table-container">
+                        <table id="copywriting-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="manage-select-all"></th>
+                                    <th>编码</th>
+                                    <th>日期</th>
+                                    <th>状态</th>
+                                    <th>编导</th>
+                                    <th>剪辑</th>
+                                    <th>博主</th>
+                                    <th>内容类型</th>
+                                    <th>呈现形式</th>
+                                    <th>时长</th>
+                                    <th>创新度</th>
+                                    <th>文案内容</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="innovation-section" style="display: none;">
+                <div class="page-header">
+                    <h1>💡 创新度评估</h1>
+                </div>
+                <div class="card">
+                    <h2>实时创新度检测</h2>
+                    <div class="form-group">
+                        <label for="innovation-check-content">输入文案内容进行创新度检测</label>
+                        <textarea id="innovation-check-content" placeholder="在此输入文案内容，系统将自动计算创新度..."></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="primary-button" onclick="checkInnovation()">检测创新度</button>
+                    </div>
+                    <div id="innovation-result" style="display: none; margin-top: 24px;">
+                        <div class="innovation-visual">
+                            <div class="innovation-score">
+                                <div class="number" id="innovation-score-number">0%</div>
+                                <div class="label">创新度评分</div>
+                            </div>
+                            <div class="innovation-meter">
+                                <div class="meter-bar">
+                                    <div class="meter-indicator" id="innovation-indicator" style="left: 0%;"></div>
+                                </div>
+                                <div class="meter-labels">
+                                    <span>0% 重复</span>
+                                    <span>50% 一般</span>
+                                    <span>100% 创新</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="similarity-list" style="margin-top: 24px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="review-section" style="display: none;">
+                <div class="page-header">
+                    <h1>📈 文案复盘</h1>
+                </div>
+                <div class="card">
+                    <h2>复盘模板库</h2>
+                    <div class="template-grid">
+                        <div class="template-card" onclick="loadReviewTemplate('high-performance')">
+                            <div class="name">🏆 高绩效模板</div>
+                            <div class="desc">适用于成交率 > 10% 的优质文案</div>
+                            <div class="tags">
+                                <span class="tag">高成交</span>
+                                <span class="tag">低成本</span>
+                            </div>
+                        </div>
+                        <div class="template-card" onclick="loadReviewTemplate('low-performance')">
+                            <div class="name">📉 低绩效模板</div>
+                            <div class="desc">适用于需要优化的文案，重点分析问题</div>
+                            <div class="tags">
+                                <span class="tag">优化</span>
+                                <span class="tag">改进</span>
+                            </div>
+                        </div>
+                        <div class="template-card" onclick="loadReviewTemplate('innovation')">
+                            <div class="name">💡 创新文案模板</div>
+                            <div class="desc">适用于创新度 > 70% 的文案</div>
+                            <div class="tags">
+                                <span class="tag">创新</span>
+                                <span class="tag">测试</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="search-container">
+                        <input type="text" id="review-search-input" class="search-input" placeholder="搜索文案内容或编码">
+                        <button id="review-search-button" class="primary-button">搜索</button>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <button id="toggle-input-form" class="primary-button">添加单条文案数据</button>
+                        <div id="review-input-form" class="card" style="margin-top: 15px; display: none; border: 1px solid var(--border);">
+                            <h3>单条文案数据录入</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="review-code">文案编码</label>
+                                    <input type="text" id="review-code" placeholder="请输入文案编码">
+                                    <button type="button" id="load-copywriting" class="secondary-button" style="margin-top: 10px;">加载已上传文案</button>
+                                </div>
+                                <div class="form-group">
+                                    <label for="review-cost">消耗</label>
+                                    <input type="number" id="review-cost" placeholder="0" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label for="review-leads">线索量</label>
+                                    <input type="number" id="review-leads" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="review-conversions">成交数量</label>
+                                    <input type="number" id="review-conversions" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="review-contract-cost">合同成本</label>
+                                    <input type="number" id="review-contract-cost" placeholder="0" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label for="review-efficiency">有效率</label>
+                                    <input type="number" id="review-efficiency" placeholder="0" min="0" max="100" step="0.01">
+                                    <span style="margin-left: 5px;">%</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="review-effective-cost">有效成本</label>
+                                    <input type="number" id="review-effective-cost" placeholder="0" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label for="review-ab-rate">AB率</label>
+                                    <input type="number" id="review-ab-rate" placeholder="0" min="0" max="100" step="0.01">
+                                    <span style="margin-left: 5px;">%</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="review-ab-cost">AB成本</label>
+                                    <input type="number" id="review-ab-cost" placeholder="0" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="review-notes">复盘备注</label>
+                                <textarea id="review-notes" placeholder="输入复盘分析和改进建议..."></textarea>
+                            </div>
+                            <div class="button-group">
+                                <button type="button" id="save-review-data" class="primary-button">保存数据</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="review-table">
+                            <thead>
+                                <tr>
+                                    <th>编码</th>
+                                    <th>文案</th>
+                                    <th>创新度</th>
+                                    <th>消耗</th>
+                                    <th>线索量</th>
+                                    <th>成交数量</th>
+                                    <th>线索成本</th>
+                                    <th>有效率</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="data-section" style="display: none;">
+                <div class="page-header">
+                    <h1>📊 深度分析</h1>
+                </div>
+                <div class="card">
+                    <h2>筛选条件</h2>
+                    <div class="filter-container">
+                        <div class="filter-item">
+                            <label for="data-start-date">开始日期</label>
+                            <input type="date" id="data-start-date">
+                        </div>
+                        <div class="filter-item">
+                            <label for="data-end-date">结束日期</label>
+                            <input type="date" id="data-end-date">
+                        </div>
+                        <div class="filter-item">
+                            <label for="data-group-by">分析维度</label>
+                            <select id="data-group-by">
+                                <option value="all">整体分析</option>
+                                <option value="director">按编导</option>
+                                <option value="contentType">按类型</option>
+                                <option value="form">按形式</option>
+                                <option value="duration">按长短视频</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label for="data-director">筛选编导</label>
+                            <select id="data-director">
+                                <option value="">全部</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label for="data-content-type">筛选类型</label>
+                            <select id="data-content-type">
+                                <option value="">全部</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label for="data-form">筛选形式</label>
+                            <select id="data-form">
+                                <option value="">全部</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label for="data-duration">筛选时长</label>
+                            <select id="data-duration">
+                                <option value="">全部</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>&nbsp;</label>
+                            <button id="analyze-button" class="primary-button" style="width: 100%;">分析数据</button>
+                        </div>
+                    </div>
+                    <div id="data-analysis-result"></div>
+                </div>
+            </div>
+
+            <div id="settings-section" style="display: none;">
+                <div class="page-header">
+                    <h1>⚙️ 系统设置</h1>
+                </div>
+                <div class="card">
+                    <h2>基本设置</h2>
+                    <div class="form-group">
+                        <label for="banned-words">违禁词列表（每行一个）</label>
+                        <textarea id="banned-words" rows="8" placeholder="请输入违禁词，每行一个"></textarea>
+                        <button id="save-banned-words" class="primary-button" style="margin-top: 10px;">保存违禁词</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="similarity-threshold">相似度阈值（%）</label>
+                        <input type="number" id="similarity-threshold" min="0" max="100" value="80">
+                        <button id="save-threshold" class="primary-button" style="margin-top: 10px;">保存阈值</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>人员管理</h2>
+                    <div class="form-group">
+                        <label>编导管理</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" id="director-code" placeholder="代码（如：Z）" style="flex: 1;">
+                            <input type="text" id="director-name" placeholder="姓名（如：张德）" style="flex: 2;">
+                            <button id="add-director" class="primary-button">添加</button>
+                        </div>
+                        <div id="director-list" style="margin-top: 10px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>剪辑管理</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" id="editor-code" placeholder="代码（如：J）" style="flex: 1;">
+                            <input type="text" id="editor-name" placeholder="姓名（如：江明宇）" style="flex: 2;">
+                            <button id="add-editor" class="primary-button">添加</button>
+                        </div>
+                        <div id="editor-list" style="margin-top: 10px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>博主管理</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" id="blogger-code" placeholder="代码（如：D）" style="flex: 1;">
+                            <input type="text" id="blogger-name" placeholder="姓名（如：丁乙）" style="flex: 2;">
+                            <button id="add-blogger" class="primary-button">添加</button>
+                        </div>
+                        <div id="blogger-list" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>分类管理</h2>
+                    <div class="form-group">
+                        <label>视频类型管理</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" id="content-type-code" placeholder="代码（如：TG）" style="flex: 1;">
+                            <input type="text" id="content-type-name" placeholder="名称（如：投资高金额）" style="flex: 2;">
+                            <button id="add-content-type" class="primary-button">添加</button>
+                        </div>
+                        <div id="content-type-list" style="margin-top: 10px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>视频形式管理</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" id="form-code" placeholder="代码（如：H）" style="flex: 1;">
+                            <input type="text" id="form-name" placeholder="名称（如：混剪）" style="flex: 2;">
+                            <button id="add-form" class="primary-button">添加</button>
+                        </div>
+                        <div id="form-list" style="margin-top: 10px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>视频时长管理</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" id="duration-code" placeholder="代码（如：C）" style="flex: 1;">
+                            <input type="text" id="duration-name" placeholder="名称（如：长视频）" style="flex: 2;">
+                            <button id="add-duration" class="primary-button">添加</button>
+                        </div>
+                        <div id="duration-list" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let copywritings = JSON.parse(localStorage.getItem('copywritings')) || [];
+        let codeDict = JSON.parse(localStorage.getItem('codeDict')) || {
+            director: { 'Z': '张德', 'Y': '尹佳林' },
+            editor: { 'J': '江明宇', 'L': '刘绘建' },
+            blogger: { 'D': '丁乙', 'A': 'AI' },
+            contentType: {
+                'TG': '投资高金额（80万起）',
+                'TD': '投资低金额（30万起）',
+                'S': '收益情况',
+                'VW': '无人自助卖点',
+                'P': '品牌实力',
+                'R': '人力成本',
+                'C': '产品差异化',
+                'Y': '运营能力',
+                'Q': '其他网络爆款'
+            },
+            form: { 'H': '混剪', 'K': '口播', 'J': '剧情' },
+            duration: { 'C': '长视频（0-25s）', 'D': '短视频（＞25s）' },
+            status: { 'X': '新文案', 'L': '老文案' }
+        };
+        let settings = JSON.parse(localStorage.getItem('settings')) || {
+            bannedWords: ['违禁词1', '违禁词2', '违禁词3'],
+            similarityThreshold: 80
+        };
+        let reviewData = JSON.parse(localStorage.getItem('reviewData')) || [];
+        let trendChart, directorChart, typeChart, innovationChart;
+
+        function init() {
+            renderTable();
+            renderReviewTable();
+            setupEventListeners();
+            setupDateChange();
+            setupSettings();
+            updateDataAnalysisFilters();
+            updateDirectorOptions();
+            updateEditorOptions();
+            updateBloggerOptions();
+            updateContentTypeOptions();
+            updateFormOptions();
+            updateDurationOptions();
+            updateFilterOptions();
+            initCharts();
+            refreshDashboard();
+        }
+
+        function initCharts() {
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            const directorCtx = document.getElementById('directorChart').getContext('2d');
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            const innovationCtx = document.getElementById('innovationChart').getContext('2d');
+
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    datasets: [{
+                        label: '成交数',
+                        data: [12, 19, 15, 25, 22, 30, 28],
+                        borderColor: '#165DFF',
+                        backgroundColor: 'rgba(22, 93, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            directorChart = new Chart(directorCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.values(codeDict.director),
+                    datasets: [{
+                        label: '成交数',
+                        data: [45, 38],
+                        backgroundColor: ['#165DFF', '#00B42A']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            typeChart = new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.values(codeDict.contentType).slice(0, 5),
+                    datasets: [{
+                        data: [25, 20, 18, 15, 12],
+                        backgroundColor: ['#165DFF', '#00B42A', '#FF7D00', '#F53F3F', '#722ED1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            innovationChart = new Chart(innovationCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-30%', '30-50%', '50-70%', '70-90%', '90-100%'],
+                    datasets: [{
+                        label: '文案数量',
+                        data: [5, 12, 28, 35, 20],
+                        backgroundColor: ['#F53F3F', '#FF7D00', '#FFC53D', '#23C343', '#165DFF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function refreshDashboard() {
+            const combinedData = copywritings.map(copywriting => {
+                const review = reviewData.find(item => item.code === copywriting.code) || {};
+                return { ...copywriting, ...review };
+            });
+
+            document.getElementById('stat-total-copywritings').textContent = copywritings.length;
+            
+            const totalConversions = combinedData.reduce((sum, item) => sum + (item.conversions || 0), 0);
+            document.getElementById('stat-total-conversions').textContent = totalConversions;
+
+            const totalCost = combinedData.reduce((sum, item) => sum + (item.cost || 0), 0);
+            const totalLeads = combinedData.reduce((sum, item) => sum + (item.leads || 0), 0);
+            const avgCost = totalLeads > 0 ? (totalCost / totalLeads).toFixed(2) : 0;
+            document.getElementById('stat-avg-cost').textContent = '¥' + avgCost;
+
+            const avgInnovation = copywritings.length > 0 
+                ? Math.round(copywritings.reduce((sum, item) => sum + (item.innovationPercentage || 0), 0) / copywritings.length)
+                : 0;
+            document.getElementById('stat-avg-innovation').textContent = avgInnovation + '%';
+        }
+
+        function updateFilterOptions() {
+            const filterDirector = document.getElementById('filter-director');
+            if (filterDirector) {
+                filterDirector.innerHTML = '<option value="">全部</option>';
+                for (const [code, name] of Object.entries(codeDict.director)) {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = name;
+                    filterDirector.appendChild(option);
+                }
+            }
+            const filterContentType = document.getElementById('filter-content-type');
+            if (filterContentType) {
+                filterContentType.innerHTML = '<option value="">全部</option>';
+                for (const [code, name] of Object.entries(codeDict.contentType)) {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = name;
+                    filterContentType.appendChild(option);
+                }
+            }
+        }
+
+        function updateDataAnalysisFilters() {
+            const directorSelect = document.getElementById('data-director');
+            if (directorSelect) {
+                directorSelect.innerHTML = '<option value="">全部</option>';
+                for (const [code, name] of Object.entries(codeDict.director)) {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = name;
+                    directorSelect.appendChild(option);
+                }
+            }
+            const contentTypeSelect = document.getElementById('data-content-type');
+            if (contentTypeSelect) {
+                contentTypeSelect.innerHTML = '<option value="">全部</option>';
+                for (const [code, name] of Object.entries(codeDict.contentType)) {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = name;
+                    contentTypeSelect.appendChild(option);
+                }
+            }
+            const formSelect = document.getElementById('data-form');
+            if (formSelect) {
+                formSelect.innerHTML = '<option value="">全部</option>';
+                for (const [code, name] of Object.entries(codeDict.form)) {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = name;
+                    formSelect.appendChild(option);
+                }
+            }
+            const durationSelect = document.getElementById('data-duration');
+            if (durationSelect) {
+                durationSelect.innerHTML = '<option value="">全部</option>';
+                for (const [code, name] of Object.entries(codeDict.duration)) {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = name;
+                    durationSelect.appendChild(option);
+                }
+            }
+        }
+
+        function setupSettings() {
+            document.getElementById('banned-words').value = settings.bannedWords.join('\n');
+            document.getElementById('similarity-threshold').value = settings.similarityThreshold;
+            renderDirectorList();
+            renderEditorList();
+            renderBloggerList();
+            renderContentTypeList();
+            renderFormList();
+            renderDurationList();
+        }
+
+        function showSection(sectionId) {
+            document.getElementById('dashboard-section').style.display = 'none';
+            document.getElementById('input-section').style.display = 'none';
+            document.getElementById('manage-section').style.display = 'none';
+            document.getElementById('review-section').style.display = 'none';
+            document.getElementById('innovation-section').style.display = 'none';
+            document.getElementById('data-section').style.display = 'none';
+            document.getElementById('settings-section').style.display = 'none';
+            document.getElementById(sectionId).style.display = 'block';
+            const navItems = document.querySelectorAll('.sidebar li');
+            navItems.forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+            if (sectionId === 'review-section') {
+                renderReviewTable();
+            }
+            if (sectionId === 'manage-section') {
+                renderTable();
+            }
+            if (sectionId === 'dashboard-section') {
+                refreshDashboard();
+            }
+        }
+
+        function setupDateChange() {
+            document.getElementById('date').addEventListener('change', function() {
+                const date = this.value;
+                if (date) {
+                    const formattedDate = date.replace(/-/g, '');
+                    const sequence = generateSequence(formattedDate);
+                    document.getElementById('sequence').value = sequence;
+                }
+            });
+        }
+
+        function generateSequence(date) {
+            const todayCopywritings = copywritings.filter(item => item.date === date);
+            const sequence = todayCopywritings.length + 1;
+            return sequence.toString().padStart(2, '0');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('copywriting-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitForm();
+            });
+            document.getElementById('search-button').addEventListener('click', function() {
+                searchCopywritings();
+            });
+            document.getElementById('filter-date').addEventListener('change', function() {
+                searchCopywritings();
+            });
+            document.getElementById('filter-status').addEventListener('change', function() {
+                searchCopywritings();
+            });
+            document.getElementById('filter-director').addEventListener('change', function() {
+                searchCopywritings();
+            });
+            document.getElementById('filter-content-type').addEventListener('change', function() {
+                searchCopywritings();
+            });
+            document.getElementById('save-banned-words').addEventListener('click', function() {
+                saveBannedWords();
+            });
+            document.getElementById('save-threshold').addEventListener('click', function() {
+                saveThreshold();
+            });
+            document.getElementById('add-director').addEventListener('click', function() {
+                addDirector();
+            });
+            document.getElementById('add-editor').addEventListener('click', function() {
+                addEditor();
+            });
+            document.getElementById('add-content-type').addEventListener('click', function() {
+                addContentType();
+            });
+            document.getElementById('add-form').addEventListener('click', function() {
+                addForm();
+            });
+            document.getElementById('add-duration').addEventListener('click', function() {
+                addDuration();
+            });
+            document.getElementById('add-blogger').addEventListener('click', function() {
+                addBlogger();
+            });
+            document.getElementById('analyze-button').addEventListener('click', function() {
+                showDataAnalysis();
+            });
+            document.getElementById('review-search-button').addEventListener('click', function() {
+                reviewSearchCopywritings();
+            });
+            document.getElementById('toggle-input-form').addEventListener('click', function() {
+                const form = document.getElementById('review-input-form');
+                if (form.style.display === 'none') {
+                    form.style.display = 'block';
+                    this.textContent = '收起单条文案数据录入';
+                } else {
+                    form.style.display = 'none';
+                    this.textContent = '添加单条文案数据';
+                }
+            });
+            document.getElementById('load-copywriting').addEventListener('click', function() {
+                const code = document.getElementById('review-code').value.trim();
+                if (!code) {
+                    showMessage('请输入文案编码', 'error', 'review-input-form');
+                    return;
+                }
+                const copywriting = copywritings.find(item => item.code === code);
+                if (copywriting) {
+                    const reviewDataItem = reviewData.find(item => item.code === code);
+                    if (reviewDataItem) {
+                        document.getElementById('review-cost').value = reviewDataItem.cost || '';
+                        document.getElementById('review-leads').value = reviewDataItem.leads || '';
+                        document.getElementById('review-conversions').value = reviewDataItem.conversions || '';
+                        document.getElementById('review-contract-cost').value = reviewDataItem.contractCost || '';
+                        document.getElementById('review-efficiency').value = reviewDataItem.efficiency ? parseFloat(reviewDataItem.efficiency) : '';
+                        document.getElementById('review-effective-cost').value = reviewDataItem.effectiveCost || '';
+                        document.getElementById('review-ab-rate').value = reviewDataItem.abRate ? parseFloat(reviewDataItem.abRate) : '';
+                        document.getElementById('review-ab-cost').value = reviewDataItem.abCost || '';
+                        document.getElementById('review-notes').value = reviewDataItem.notes || '';
+                    }
+                    showMessage('已加载文案信息', 'success', 'review-input-form');
+                } else {
+                    showMessage('未找到该编码的文案，请先上传文案', 'warning', 'review-input-form');
+                }
+            });
+            document.getElementById('save-review-data').addEventListener('click', function() {
+                saveReviewData();
+            });
+            document.getElementById('manage-batch-upload-button').addEventListener('click', function() {
+                document.getElementById('manage-batch-upload-input').click();
+            });
+            document.getElementById('manage-batch-upload-input').addEventListener('change', function(e) {
+                handleBatchUpload(e);
+            });
+            document.getElementById('manage-batch-download-button').addEventListener('click', function() {
+                batchDownloadCopywritings();
+            });
+            document.getElementById('download-template-button').addEventListener('click', function() {
+                downloadUploadTemplate();
+            });
+            document.getElementById('download-today-button').addEventListener('click', function() {
+                downloadTodayCopywritings();
+            });
+            document.getElementById('manage-select-all').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('#copywriting-table tbody input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+            });
+        }
+
+        function saveBannedWords() {
+            const bannedWordsText = document.getElementById('banned-words').value;
+            const bannedWords = bannedWordsText.split('\n').filter(word => word.trim() !== '');
+            settings.bannedWords = bannedWords;
+            localStorage.setItem('settings', JSON.stringify(settings));
+            showMessage('违禁词保存成功', 'success', 'settings-section');
+        }
+
+        function saveThreshold() {
+            const threshold = parseInt(document.getElementById('similarity-threshold').value);
+            if (threshold >= 0 && threshold <= 100) {
+                settings.similarityThreshold = threshold;
+                localStorage.setItem('settings', JSON.stringify(settings));
+                showMessage('相似度阈值保存成功', 'success', 'settings-section');
+            } else {
+                showMessage('请输入0-100之间的数值', 'error', 'settings-section');
+            }
+        }
+
+        function addDirector() {
+            const code = document.getElementById('director-code').value.trim().toUpperCase();
+            const name = document.getElementById('director-name').value.trim();
+            if (!code || !name) {
+                showMessage('请输入代码和姓名', 'error', 'settings-section');
+                return;
+            }
+            codeDict.director[code] = name;
+            localStorage.setItem('codeDict', JSON.stringify(codeDict));
+            document.getElementById('director-code').value = '';
+            document.getElementById('director-name').value = '';
+            renderDirectorList();
+            updateDirectorOptions();
+            updateDataAnalysisFilters();
+            updateFilterOptions();
+            showMessage('编导添加成功', 'success', 'settings-section');
+        }
+
+        function addEditor() {
+            const code = document.getElementById('editor-code').value.trim().toUpperCase();
+            const name = document.getElementById('editor-name').value.trim();
+            if (!code || !name) {
+                showMessage('请输入代码和姓名', 'error', 'settings-section');
+                return;
+            }
+            codeDict.editor[code] = name;
+            localStorage.setItem('codeDict', JSON.stringify(codeDict));
+            document.getElementById('editor-code').value = '';
+            document.getElementById('editor-name').value = '';
+            renderEditorList();
+            updateEditorOptions();
+            showMessage('剪辑添加成功', 'success', 'settings-section');
+        }
+
+        function renderDirectorList() {
+            const directorList = document.getElementById('director-list');
+            directorList.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.director)) {
+                const item = document.createElement('div');
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.style.padding = '8px 0';
+                item.style.borderBottom = '1px solid var(--border)';
+                item.innerHTML = `<span>${code}: ${name}</span><button onclick="deleteDirector('${code}')" class="danger-button" style="padding: 4px 12px; font-size: 12px;">删除</button>`;
+                directorList.appendChild(item);
+            }
+        }
+
+        function renderEditorList() {
+            const editorList = document.getElementById('editor-list');
+            editorList.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.editor)) {
+                const item = document.createElement('div');
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.style.padding = '8px 0';
+                item.style.borderBottom = '1px solid var(--border)';
+                item.innerHTML = `<span>${code}: ${name}</span><button onclick="deleteEditor('${code}')" class="danger-button" style="padding: 4px 12px; font-size: 12px;">删除</button>`;
+                editorList.appendChild(item);
+            }
+        }
+
+        function deleteDirector(code) {
+            if (confirm('确定要删除这个编导吗？')) {
+                delete codeDict.director[code];
+                localStorage.setItem('codeDict', JSON.stringify(codeDict));
+                renderDirectorList();
+                updateDirectorOptions();
+                updateDataAnalysisFilters();
+                updateFilterOptions();
+                showMessage('编导删除成功', 'success', 'settings-section');
+            }
+        }
+
+        function deleteEditor(code) {
+            if (confirm('确定要删除这个剪辑吗？')) {
+                delete codeDict.editor[code];
+                localStorage.setItem('codeDict', JSON.stringify(codeDict));
+                renderEditorList();
+                updateEditorOptions();
+                showMessage('剪辑删除成功', 'success', 'settings-section');
+            }
+        }
+
+        function updateDirectorOptions() {
+            const select = document.getElementById('director');
+            select.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.director)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${name} (${code})`;
+                select.appendChild(option);
+            }
+        }
+
+        function updateEditorOptions() {
+            const select = document.getElementById('editor');
+            select.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.editor)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${name} (${code})`;
+                select.appendChild(option);
+            }
+        }
+
+        function addContentType() {
+            const code = document.getElementById('content-type-code').value.trim().toUpperCase();
+            const name = document.getElementById('content-type-name').value.trim();
+            if (!code || !name) {
+                showMessage('请输入代码和名称', 'error', 'settings-section');
+                return;
+            }
+            codeDict.contentType[code] = name;
+            localStorage.setItem('codeDict', JSON.stringify(codeDict));
+            document.getElementById('content-type-code').value = '';
+            document.getElementById('content-type-name').value = '';
+            renderContentTypeList();
+            updateContentTypeOptions();
+            updateDataAnalysisFilters();
+            updateFilterOptions();
+            showMessage('视频类型添加成功', 'success', 'settings-section');
+        }
+
+        function addForm() {
+            const code = document.getElementById('form-code').value.trim().toUpperCase();
+            const name = document.getElementById('form-name').value.trim();
+            if (!code || !name) {
+                showMessage('请输入代码和名称', 'error', 'settings-section');
+                return;
+            }
+            codeDict.form[code] = name;
+            localStorage.setItem('codeDict', JSON.stringify(codeDict));
+            document.getElementById('form-code').value = '';
+            document.getElementById('form-name').value = '';
+            renderFormList();
+            updateFormOptions();
+            updateDataAnalysisFilters();
+            showMessage('视频形式添加成功', 'success', 'settings-section');
+        }
+
+        function addDuration() {
+            const code = document.getElementById('duration-code').value.trim().toUpperCase();
+            const name = document.getElementById('duration-name').value.trim();
+            if (!code || !name) {
+                showMessage('请输入代码和名称', 'error', 'settings-section');
+                return;
+            }
+            codeDict.duration[code] = name;
+            localStorage.setItem('codeDict', JSON.stringify(codeDict));
+            document.getElementById('duration-code').value = '';
+            document.getElementById('duration-name').value = '';
+            renderDurationList();
+            updateDurationOptions();
+            updateDataAnalysisFilters();
+            showMessage('视频时长添加成功', 'success', 'settings-section');
+        }
+
+        function renderContentTypeList() {
+            const contentTypeList = document.getElementById('content-type-list');
+            contentTypeList.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.contentType)) {
+                const item = document.createElement('div');
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.style.padding = '8px 0';
+                item.style.borderBottom = '1px solid var(--border)';
+                item.innerHTML = `<span>${code}: ${name}</span><button onclick="deleteContentType('${code}')" class="danger-button" style="padding: 4px 12px; font-size: 12px;">删除</button>`;
+                contentTypeList.appendChild(item);
+            }
+        }
+
+        function renderFormList() {
+            const formList = document.getElementById('form-list');
+            formList.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.form)) {
+                const item = document.createElement('div');
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.style.padding = '8px 0';
+                item.style.borderBottom = '1px solid var(--border)';
+                item.innerHTML = `<span>${code}: ${name}</span><button onclick="deleteForm('${code}')" class="danger-button" style="padding: 4px 12px; font-size: 12px;">删除</button>`;
+                formList.appendChild(item);
+            }
+        }
+
+        function renderDurationList() {
+            const durationList = document.getElementById('duration-list');
+            durationList.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.duration)) {
+                const item = document.createElement('div');
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.style.padding = '8px 0';
+                item.style.borderBottom = '1px solid var(--border)';
+                item.innerHTML = `<span>${code}: ${name}</span><button onclick="deleteDurationType('${code}')" class="danger-button" style="padding: 4px 12px; font-size: 12px;">删除</button>`;
+                durationList.appendChild(item);
+            }
+        }
+
+        function deleteContentType(code) {
+            if (confirm('确定要删除这个视频类型吗？')) {
+                delete codeDict.contentType[code];
+                localStorage.setItem('codeDict', JSON.stringify(codeDict));
+                renderContentTypeList();
+                updateContentTypeOptions();
+                updateDataAnalysisFilters();
+                updateFilterOptions();
+                showMessage('视频类型删除成功', 'success', 'settings-section');
+            }
+        }
+
+        function deleteForm(code) {
+            if (confirm('确定要删除这个视频形式吗？')) {
+                delete codeDict.form[code];
+                localStorage.setItem('codeDict', JSON.stringify(codeDict));
+                renderFormList();
+                updateFormOptions();
+                updateDataAnalysisFilters();
+                showMessage('视频形式删除成功', 'success', 'settings-section');
+            }
+        }
+
+        function deleteDurationType(code) {
+            if (confirm('确定要删除这个视频时长吗？')) {
+                delete codeDict.duration[code];
+                localStorage.setItem('codeDict', JSON.stringify(codeDict));
+                renderDurationList();
+                updateDurationOptions();
+                updateDataAnalysisFilters();
+                showMessage('视频时长删除成功', 'success', 'settings-section');
+            }
+        }
+
+        function updateContentTypeOptions() {
+            const select = document.getElementById('content-type');
+            select.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.contentType)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = name;
+                select.appendChild(option);
+            }
+        }
+
+        function updateFormOptions() {
+            const select = document.getElementById('form');
+            select.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.form)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${name} (${code})`;
+                select.appendChild(option);
+            }
+        }
+
+        function updateDurationOptions() {
+            const select = document.getElementById('duration');
+            select.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.duration)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = name;
+                select.appendChild(option);
+            }
+        }
+
+        function addBlogger() {
+            const code = document.getElementById('blogger-code').value.trim().toUpperCase();
+            const name = document.getElementById('blogger-name').value.trim();
+            if (!code || !name) {
+                showMessage('请输入代码和姓名', 'error', 'settings-section');
+                return;
+            }
+            codeDict.blogger[code] = name;
+            localStorage.setItem('codeDict', JSON.stringify(codeDict));
+            document.getElementById('blogger-code').value = '';
+            document.getElementById('blogger-name').value = '';
+            renderBloggerList();
+            updateBloggerOptions();
+            showMessage('博主添加成功', 'success', 'settings-section');
+        }
+
+        function renderBloggerList() {
+            const bloggerList = document.getElementById('blogger-list');
+            bloggerList.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.blogger)) {
+                const item = document.createElement('div');
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.style.padding = '8px 0';
+                item.style.borderBottom = '1px solid var(--border)';
+                item.innerHTML = `<span>${code}: ${name}</span><button onclick="deleteBlogger('${code}')" class="danger-button" style="padding: 4px 12px; font-size: 12px;">删除</button>`;
+                bloggerList.appendChild(item);
+            }
+        }
+
+        function deleteBlogger(code) {
+            if (confirm('确定要删除这个博主吗？')) {
+                delete codeDict.blogger[code];
+                localStorage.setItem('codeDict', JSON.stringify(codeDict));
+                renderBloggerList();
+                updateBloggerOptions();
+                showMessage('博主删除成功', 'success', 'settings-section');
+            }
+        }
+
+        function updateBloggerOptions() {
+            const select = document.getElementById('blogger');
+            select.innerHTML = '';
+            for (const [code, name] of Object.entries(codeDict.blogger)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${name} (${code})`;
+                select.appendChild(option);
+            }
+        }
+
+        function showMessage(message, type, containerId) {
+            let messageDiv;
+            if (containerId === 'review-input-form') {
+                messageDiv = document.createElement('div');
+                messageDiv.className = 'result';
+                if (type === 'error') messageDiv.classList.add('error');
+                if (type === 'warning') messageDiv.classList.add('warning');
+                messageDiv.textContent = message;
+                const form = document.getElementById('review-input-form');
+                form.appendChild(messageDiv);
+                setTimeout(() => messageDiv.remove(), 3000);
+            } else {
+                const targetId = containerId === 'settings-section' ? 'settings-section' : 'input-section';
+                const formMessage = document.getElementById('form-message');
+                formMessage.textContent = message;
+                formMessage.style.display = 'block';
+                formMessage.className = 'result';
+                if (type === 'error') formMessage.classList.add('error');
+                if (type === 'warning') formMessage.classList.add('warning');
+                setTimeout(() => {
+                    formMessage.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function renderTable(data = null) {
+            const tableBody = document.querySelector('#copywriting-table tbody');
+            tableBody.innerHTML = '';
+            const displayData = data || copywritings;
+            displayData.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" class="copywriting-checkbox" value="${item.id}"></td>
+                    <td>${item.code}</td>
+                    <td>${item.date}</td>
+                    <td>${codeDict.status[item.status] || item.status}</td>
+                    <td>${codeDict.director[item.director] || item.director}</td>
+                    <td>${codeDict.editor[item.editor] || item.editor}</td>
+                    <td>${codeDict.blogger[item.blogger] || item.blogger}</td>
+                    <td>${codeDict.contentType[item.contentType] || item.contentType}</td>
+                    <td>${codeDict.form[item.form] || item.form}</td>
+                    <td>${codeDict.duration[item.duration] || item.duration}</td>
+                    <td>${item.innovationPercentage ? item.innovationPercentage + '%' : '-'}</td>
+                    <td>
+                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.content.substring(0, 30)}${item.content.length > 30 ? '...' : ''}</div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button onclick="editCopywriting(${item.id})" class="action-button edit-button">编辑</button>
+                            <button onclick="deleteCopywriting(${item.id})" class="action-button delete-button">删除</button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderReviewTable(data = null) {
+            const tableBody = document.querySelector('#review-table tbody');
+            tableBody.innerHTML = '';
+            const combinedData = copywritings.map(copywriting => {
+                const review = reviewData.find(item => item.code === copywriting.code) || {};
+                return { ...copywriting, ...review };
+            });
+            const displayData = data || combinedData;
+            displayData.forEach((item, index) => {
+                const leadCost = item.leads > 0 ? (item.cost / item.leads).toFixed(2) : '-';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.code}</td>
+                    <td>
+                        <div style="margin-bottom: 8px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.content.substring(0, 50)}${item.content.length > 50 ? '...' : ''}</div>
+                    </td>
+                    <td>${item.innovationPercentage ? item.innovationPercentage + '%' : '-'}</td>
+                    <td>${item.cost || 0}</td>
+                    <td>${item.leads || 0}</td>
+                    <td>${item.conversions || 0}</td>
+                    <td>¥${leadCost}</td>
+                    <td>${item.efficiency ? item.efficiency + '%' : '0%'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button onclick="editReviewData('${item.code}')" class="action-button edit-button">编辑复盘</button>
+                            <button onclick="deleteReviewData('${item.code}')" class="action-button delete-button">删除复盘</button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function editCopywriting(id) {
+            const copywriting = copywritings.find(item => item.id === id);
+            if (copywriting) {
+                localStorage.setItem('editingId', id);
+                const dateStr = copywriting.date.substring(0, 4) + '-' + copywriting.date.substring(4, 6) + '-' + copywriting.date.substring(6, 8);
+                document.getElementById('date').value = dateStr;
+                document.getElementById('sequence').value = copywriting.code.split('-')[1];
+                document.getElementById('status').value = copywriting.status;
+                document.getElementById('director').value = copywriting.director;
+                document.getElementById('editor').value = copywriting.editor;
+                document.getElementById('blogger').value = copywriting.blogger;
+                document.getElementById('content-type').value = copywriting.contentType;
+                document.getElementById('form').value = copywriting.form;
+                document.getElementById('duration').value = copywriting.duration;
+                document.getElementById('content').value = copywriting.content;
+                showSection('input-section');
+                showMessage('已加载文案，请编辑后提交', 'success');
+            }
+        }
+
+        function deleteCopywriting(id) {
+            if (confirm('确定要删除这个文案吗？')) {
+                copywritings = copywritings.filter(item => item.id !== id);
+                localStorage.setItem('copywritings', JSON.stringify(copywritings));
+                renderTable();
+                showMessage('文案删除成功', 'success');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('copywriting-form').reset();
+            document.getElementById('sequence').value = '';
+            localStorage.removeItem('editingId');
+        }
+
+        function submitForm() {
+            const date = document.getElementById('date').value;
+            const sequence = document.getElementById('sequence').value;
+            const status = document.getElementById('status').value;
+            const director = document.getElementById('director').value;
+            const editor = document.getElementById('editor').value;
+            const blogger = document.getElementById('blogger').value;
+            const contentType = document.getElementById('content-type').value;
+            const form = document.getElementById('form').value;
+            const duration = document.getElementById('duration').value;
+            const content = document.getElementById('content').value;
+            const formattedDate = date.replace(/-/g, '');
+            const code = `${formattedDate}-${sequence}-${status}-${director}-${editor}-${blogger}-${contentType}-${form}-${duration}`;
+            const editingId = localStorage.getItem('editingId');
+            
+            let existingIndex = -1;
+            if (editingId) {
+                existingIndex = copywritings.findIndex(item => item.id == editingId);
+            }
+            
+            const innovationScore = calculateInnovationScore(content);
+            const innovationPercentage = Math.round(innovationScore * 100);
+
+            if (existingIndex >= 0) {
+                copywritings[existingIndex] = {
+                    ...copywritings[existingIndex],
+                    date: formattedDate,
+                    status: status,
+                    director: director,
+                    editor: editor,
+                    blogger: blogger,
+                    contentType: contentType,
+                    form: form,
+                    duration: duration,
+                    content: content,
+                    innovationScore: innovationScore,
+                    innovationPercentage: innovationPercentage
+                };
+                localStorage.removeItem('editingId');
+                showMessage('文案更新成功，创新度：' + innovationPercentage + '%', 'success');
+            } else {
+                const newCopywriting = {
+                    id: Date.now(),
+                    code: code,
+                    date: formattedDate,
+                    status: status,
+                    director: director,
+                    editor: editor,
+                    blogger: blogger,
+                    contentType: contentType,
+                    form: form,
+                    duration: duration,
+                    content: content,
+                    innovationScore: innovationScore,
+                    innovationPercentage: innovationPercentage,
+                    createdAt: new Date().toISOString()
+                };
+                copywritings.push(newCopywriting);
+                showMessage('文案添加成功，创新度：' + innovationPercentage + '%', 'success');
+            }
+
+            localStorage.setItem('copywritings', JSON.stringify(copywritings));
+            resetForm();
+            renderTable();
+            refreshDashboard();
+        }
+
+        function calculateInnovationScore(content) {
+            if (copywritings.length === 0) {
+                return 1.0;
+            }
+            const editingId = localStorage.getItem('editingId');
+            let maxSimilarity = 0;
+            for (const item of copywritings) {
+                if (editingId && item.id == editingId) {
+                    continue;
+                }
+                const similarity = calculateSimilarity(content, item.content);
+                if (similarity > maxSimilarity) {
+                    maxSimilarity = similarity;
+                }
+            }
+            return 1 - maxSimilarity;
+        }
+
+        function calculateSimilarity(text1, text2) {
+            const words1 = text1.toLowerCase().split(/\s+/);
+            const words2 = text2.toLowerCase().split(/\s+/);
+            const wordSet = new Set([...words1, ...words2]);
+            const vector1 = [];
+            const vector2 = [];
+            for (const word of wordSet) {
+                vector1.push(words1.filter(w => w === word).length);
+                vector2.push(words2.filter(w => w === word).length);
+            }
+            const dotProduct = vector1.reduce((sum, val, i) => sum + val * vector2[i], 0);
+            const magnitude1 = Math.sqrt(vector1.reduce((sum, val) => sum + val * val, 0));
+            const magnitude2 = Math.sqrt(vector2.reduce((sum, val) => sum + val * val, 0));
+            if (magnitude1 === 0 || magnitude2 === 0) {
+                return 0;
+            }
+            return dotProduct / (magnitude1 * magnitude2);
+        }
+
+        function searchCopywritings() {
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            const filterDate = document.getElementById('filter-date').value;
+            const filterStatus = document.getElementById('filter-status').value;
+            const filterDirector = document.getElementById('filter-director').value;
+            const filterContentType = document.getElementById('filter-content-type').value;
+
+            let filtered = [...copywritings];
+
+            if (searchText) {
+                filtered = filtered.filter(item => 
+                    item.content.toLowerCase().includes(searchText) || 
+                    item.code.toLowerCase().includes(searchText)
+                );
+            }
+
+            if (filterDate) {
+                const formattedDate = filterDate.replace(/-/g, '');
+                filtered = filtered.filter(item => item.date === formattedDate);
+            }
+
+            if (filterStatus) {
+                filtered = filtered.filter(item => item.status === filterStatus);
+            }
+
+            if (filterDirector) {
+                filtered = filtered.filter(item => item.director === filterDirector);
+            }
+
+            if (filterContentType) {
+                filtered = filtered.filter(item => item.contentType === filterContentType);
+            }
+
+            renderTable(filtered);
+        }
+
+        function reviewSearchCopywritings() {
+            const searchText = document.getElementById('review-search-input').value.toLowerCase();
+            const combinedData = copywritings.map(copywriting => {
+                const review = reviewData.find(item => item.code === copywriting.code) || {};
+                return { ...copywriting, ...review };
+            });
+
+            let filtered = [...combinedData];
+
+            if (searchText) {
+                filtered = filtered.filter(item => 
+                    item.content.toLowerCase().includes(searchText) || 
+                    item.code.toLowerCase().includes(searchText)
+                );
+            }
+
+            renderReviewTable(filtered);
+        }
+
+        function editReviewData(code) {
+            const reviewDataItem = reviewData.find(item => item.code === code);
+            document.getElementById('review-code').value = code;
+            if (reviewDataItem) {
+                document.getElementById('review-cost').value = reviewDataItem.cost || '';
+                document.getElementById('review-leads').value = reviewDataItem.leads || '';
+                document.getElementById('review-conversions').value = reviewDataItem.conversions || '';
+                document.getElementById('review-contract-cost').value = reviewDataItem.contractCost || '';
+                document.getElementById('review-efficiency').value = reviewDataItem.efficiency ? parseFloat(reviewDataItem.efficiency) : '';
+                document.getElementById('review-effective-cost').value = reviewDataItem.effectiveCost || '';
+                document.getElementById('review-ab-rate').value = reviewDataItem.abRate ? parseFloat(reviewDataItem.abRate) : '';
+                document.getElementById('review-ab-cost').value = reviewDataItem.abCost || '';
+                document.getElementById('review-notes').value = reviewDataItem.notes || '';
+            } else {
+                document.getElementById('review-cost').value = '';
+                document.getElementById('review-leads').value = '';
+                document.getElementById('review-conversions').value = '';
+                document.getElementById('review-contract-cost').value = '';
+                document.getElementById('review-efficiency').value = '';
+                document.getElementById('review-effective-cost').value = '';
+                document.getElementById('review-ab-rate').value = '';
+                document.getElementById('review-ab-cost').value = '';
+                document.getElementById('review-notes').value = '';
+            }
+            document.getElementById('review-input-form').style.display = 'block';
+            document.getElementById('toggle-input-form').textContent = '收起单条文案数据录入';
+        }
+
+        function deleteReviewData(code) {
+            if (confirm('确定要删除这个复盘数据吗？')) {
+                reviewData = reviewData.filter(item => item.code !== code);
+                localStorage.setItem('reviewData', JSON.stringify(reviewData));
+                renderReviewTable();
+            }
+        }
+
+        function saveReviewData() {
+            const code = document.getElementById('review-code').value.trim();
+            const cost = parseFloat(document.getElementById('review-cost').value) || 0;
+            const leads = parseInt(document.getElementById('review-leads').value) || 0;
+            const conversions = parseInt(document.getElementById('review-conversions').value) || 0;
+            const contractCost = parseFloat(document.getElementById('review-contract-cost').value) || 0;
+            const efficiency = parseFloat(document.getElementById('review-efficiency').value) || 0;
+            const effectiveCost = parseFloat(document.getElementById('review-effective-cost').value) || 0;
+            const abRate = parseFloat(document.getElementById('review-ab-rate').value) || 0;
+            const abCost = parseFloat(document.getElementById('review-ab-cost').value) || 0;
+            const notes = document.getElementById('review-notes').value || '';
+
+            if (!code) {
+                showMessage('请输入文案编码', 'error', 'review-input-form');
+                return;
+            }
+            const copywriting = copywritings.find(item => item.code === code);
+            if (!copywriting) {
+                showMessage('未找到该编码的文案，请先上传文案', 'warning', 'review-input-form');
+                return;
+            }
+            const existingIndex = reviewData.findIndex(item => item.code === code);
+            if (existingIndex >= 0) {
+                reviewData[existingIndex] = {
+                    code: code,
+                    cost: cost,
+                    leads: leads,
+                    conversions: conversions,
+                    contractCost: contractCost,
+                    efficiency: efficiency,
+                    effectiveCost: effectiveCost,
+                    abRate: abRate,
+                    abCost: abCost,
+                    notes: notes
+                };
+                showMessage('复盘数据更新成功', 'success', 'review-input-form');
+            } else {
+                const newReviewData = {
+                    code: code,
+                    cost: cost,
+                    leads: leads,
+                    conversions: conversions,
+                    contractCost: contractCost,
+                    efficiency: efficiency,
+                    effectiveCost: effectiveCost,
+                    abRate: abRate,
+                    abCost: abCost,
+                    notes: notes
+                };
+                reviewData.push(newReviewData);
+                showMessage('复盘数据添加成功', 'success', 'review-input-form');
+            }
+            localStorage.setItem('reviewData', JSON.stringify(reviewData));
+            document.getElementById('review-code').value = '';
+            document.getElementById('review-cost').value = '';
+            document.getElementById('review-leads').value = '';
+            document.getElementById('review-conversions').value = '';
+            document.getElementById('review-contract-cost').value = '';
+            document.getElementById('review-efficiency').value = '';
+            document.getElementById('review-effective-cost').value = '';
+            document.getElementById('review-ab-rate').value = '';
+            document.getElementById('review-ab-cost').value = '';
+            document.getElementById('review-notes').value = '';
+            document.getElementById('review-input-form').style.display = 'none';
+            document.getElementById('toggle-input-form').textContent = '添加单条文案数据';
+            renderReviewTable();
+            refreshDashboard();
+        }
+
+        function loadReviewTemplate(templateType) {
+            const templates = {
+                'high-performance': {
+                    notes: '【高绩效文案复盘模板】\n\n1. 成功因素分析：\n- 开头钩子：\n- 核心卖点：\n- 转化逻辑：\n\n2. 可复用元素：\n- 文案结构：\n- 话术模式：\n- 节奏把控：\n\n3. 优化建议：\n- 可以改进的地方：\n- 可测试的变量：'
+                },
+                'low-performance': {
+                    notes: '【低绩效文案复盘模板】\n\n1. 问题诊断：\n- 跳出率高的原因：\n- 线索少的原因：\n- 转化差的原因：\n\n2. 根本原因分析：\n- 内容问题：\n- 投放问题：\n- 时机问题：\n\n3. 改进方案：\n- 短期改进：\n- 长期优化：\n- A/B测试计划：'
+                },
+                'innovation': {
+                    notes: '【创新文案复盘模板】\n\n1. 创新点分析：\n- 独特视角：\n- 新颖表达：\n- 差异化卖点：\n\n2. 市场反应：\n- 用户反馈：\n- 数据表现：\n- 竞争对比：\n\n3. 可复制的创新模式：\n- 创新方法论：\n- 可复用框架：\n- 持续创新方向：'
+                }
+            };
+            
+            const template = templates[templateType];
+            if (template) {
+                document.getElementById('review-notes').value = template.notes;
+                document.getElementById('review-input-form').style.display = 'block';
+                document.getElementById('toggle-input-form').textContent = '收起单条文案数据录入';
+            }
+        }
+
+        function checkInnovation() {
+            const content = document.getElementById('innovation-check-content').value.trim();
+            if (!content) {
+                showMessage('请输入文案内容', 'error');
+                return;
+            }
+
+            const innovationScore = calculateInnovationScore(content);
+            const innovationPercentage = Math.round(innovationScore * 100);
+
+            document.getElementById('innovation-result').style.display = 'block';
+            document.getElementById('innovation-score-number').textContent = innovationPercentage + '%';
+            document.getElementById('innovation-indicator').style.left = innovationPercentage + '%';
+
+            const similarityList = document.getElementById('similarity-list');
+            similarityList.innerHTML = '<h3>相似文案对比</h3>';
+            
+            const similarItems = [];
+            for (const item of copywritings) {
+                const similarity = calculateSimilarity(content, item.content);
+                if (similarity > 0.3) {
+                    similarItems.push({ ...item, similarity: similarity });
+                }
+            }
+            
+            similarItems.sort((a, b) => b.similarity - a.similarity);
+            
+            if (similarItems.length > 0) {
+                const table = document.createElement('table');
+                table.style.marginTop = '16px';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>相似度</th>
+                            <th>编码</th>
+                            <th>文案内容</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${similarItems.slice(0, 5).map(item => `
+                            <tr>
+                                <td style="color: ${item.similarity > 0.7 ? '#F53F3F' : item.similarity > 0.5 ? '#FF7D00' : '#00B42A'}">
+                                    ${Math.round(item.similarity * 100)}%
+                                </td>
+                                <td>${item.code}</td>
+                                <td style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    ${item.content.substring(0, 50)}${item.content.length > 50 ? '...' : ''}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                similarityList.appendChild(table);
+            } else {
+                similarityList.innerHTML += '<p style="color: #00B42A; margin-top: 16px;">✓ 未发现高度相似的文案，创新性很好！</p>';
+            }
+        }
+
+        function handleBatchUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const csvContent = event.target.result;
+                    const lines = csvContent.split('\n').filter(line => line.trim());
+                    
+                    if (lines.length < 2) {
+                        showMessage('CSV文件格式错误，至少需要标题行和一行数据', 'error');
+                        return;
+                    }
+
+                    const headers = lines[0].split(',').map(h => h.trim());
+                    let successCount = 0;
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const values = lines[i].split(',').map(v => v.trim());
+                        if (values.length < headers.length) continue;
+
+                        const date = values[0] || new Date().toISOString().split('T')[0].replace(/-/g, '');
+                        const status = values[1] || 'X';
+                        const director = values[2] || 'Z';
+                        const editor = values[3] || 'J';
+                        const blogger = values[4] || 'D';
+                        const contentType = values[5] || 'TG';
+                        const form = values[6] || 'H';
+                        const duration = values[7] || 'C';
+                        const content = values[8] || '';
+
+                        if (!content) continue;
+
+                        const sequence = generateSequence(date);
+                        const code = `${date}-${sequence}-${status}-${director}-${editor}-${blogger}-${contentType}-${form}-${duration}`;
+                        const innovationScore = calculateInnovationScore(content);
+                        const innovationPercentage = Math.round(innovationScore * 100);
+
+                        const newCopywriting = {
+                            id: Date.now() + i,
+                            code: code,
+                            date: date,
+                            status: status,
+                            director: director,
+                            editor: editor,
+                            blogger: blogger,
+                            contentType: contentType,
+                            form: form,
+                            duration: duration,
+                            content: content,
+                            innovationScore: innovationScore,
+                            innovationPercentage: innovationPercentage,
+                            createdAt: new Date().toISOString()
+                        };
+                        
+                        copywritings.push(newCopywriting);
+                        successCount++;
+                    }
+
+                    localStorage.setItem('copywritings', JSON.stringify(copywritings));
+                    renderTable();
+                    refreshDashboard();
+                    showMessage(`批量上传成功，共导入 ${successCount} 条文案`, 'success');
+                } catch (error) {
+                    showMessage('文件解析失败：' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function batchDownloadCopywritings() {
+            if (copywritings.length === 0) {
+                showMessage('没有文案数据可下载', 'warning');
+                return;
+            }
+
+            const headers = ['日期', '状态', '编导', '剪辑', '博主', '内容类型', '呈现形式', '时长', '文案内容', '创新度'];
+            const rows = copywritings.map(item => [
+                item.date,
+                item.status,
+                item.director,
+                item.editor,
+                item.blogger,
+                item.contentType,
+                item.form,
+                item.duration,
+                '"' + item.content.replace(/"/g, '""') + '"',
+                item.innovationPercentage + '%'
+            ]);
+
+            const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            downloadFile(csvContent, 'copywritings.csv', 'text/csv');
+            showMessage('批量下载成功', 'success');
+        }
+
+        function downloadTodayCopywritings() {
+            const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            const todayCopywritings = copywritings.filter(item => item.date === today);
+
+            if (todayCopywritings.length === 0) {
+                showMessage('今天没有文案数据', 'warning');
+                return;
+            }
+
+            const headers = ['日期', '状态', '编导', '剪辑', '博主', '内容类型', '呈现形式', '时长', '文案内容', '创新度'];
+            const rows = todayCopywritings.map(item => [
+                item.date,
+                item.status,
+                item.director,
+                item.editor,
+                item.blogger,
+                item.contentType,
+                item.form,
+                item.duration,
+                '"' + item.content.replace(/"/g, '""') + '"',
+                item.innovationPercentage + '%'
+            ]);
+
+            const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            downloadFile(csvContent, `copywritings_${today}.csv`, 'text/csv');
+            showMessage('今天的文案下载成功', 'success');
+        }
+
+        function downloadUploadTemplate() {
+            const headers = ['日期(YYYYMMDD)', '状态(X/L)', '编导', '剪辑', '博主', '内容类型', '呈现形式', '时长', '文案内容'];
+            const exampleRow = ['20240101', 'X', 'Z', 'J', 'D', 'TG', 'H', 'C', '这是示例文案内容'];
+            const csvContent = [headers.join(','), exampleRow.join(',')].join('\n');
+            downloadFile(csvContent, 'upload_template.csv', 'text/csv');
+            showMessage('模板下载成功', 'success');
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob(['\ufeff' + content], { type: mimeType + ';charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function showDataAnalysis() {
+            const startDate = document.getElementById('data-start-date').value;
+            const endDate = document.getElementById('data-end-date').value;
+            const groupBy = document.getElementById('data-group-by').value;
+            const filterDirector = document.getElementById('data-director').value;
+            const filterContentType = document.getElementById('data-content-type').value;
+            const filterForm = document.getElementById('data-form').value;
+            const filterDuration = document.getElementById('data-duration').value;
+
+            const combinedData = copywritings.map(copywriting => {
+                const review = reviewData.find(item => item.code === copywriting.code) || {};
+                return { ...copywriting, ...review };
+            });
+
+            let filtered = [...combinedData];
+
+            if (filterDirector) {
+                filtered = filtered.filter(item => item.director === filterDirector);
+            }
+            if (filterContentType) {
+                filtered = filtered.filter(item => item.contentType === filterContentType);
+            }
+            if (filterForm) {
+                filtered = filtered.filter(item => item.form === filterForm);
+            }
+            if (filterDuration) {
+                filtered = filtered.filter(item => item.duration === filterDuration);
+            }
+
+            const totalCost = filtered.reduce((sum, item) => sum + (item.cost || 0), 0);
+            const totalLeads = filtered.reduce((sum, item) => sum + (item.leads || 0), 0);
+            const totalConversions = filtered.reduce((sum, item) => sum + (item.conversions || 0), 0);
+            const avgEfficiency = filtered.length > 0 
+                ? (filtered.reduce((sum, item) => sum + (parseFloat(item.efficiency) || 0), 0) / filtered.length).toFixed(2) 
+                : 0;
+            const avgInnovation = filtered.length > 0 
+                ? (filtered.reduce((sum, item) => sum + (item.innovationPercentage || 0), 0) / filtered.length).toFixed(2) 
+                : 0;
+            const avgLeadCost = totalLeads > 0 ? (totalCost / totalLeads).toFixed(2) : 0;
+
+            let groupData = {};
+            if (groupBy !== 'all') {
+                groupData = filtered.reduce((groups, item) => {
+                    const key = item[groupBy];
+                    if (!groups[key]) {
+                        groups[key] = [];
+                    }
+                    groups[key].push(item);
+                    return groups;
+                }, {});
+            }
+
+            const resultDiv = document.getElementById('data-analysis-result');
+            resultDiv.innerHTML = `
+                <div class="card" style="margin-top: 24px;">
+                    <h3>📊 分析结果</h3>
+                    <div class="prep-box">
+                        <div class="prep-title">📌 PREP 结构结论</div>
+                        <div class="prep-item">
+                            <div class="prep-title" style="margin-bottom: 8px;">结论 (Point)</div>
+                            <div class="content">
+                                基于 ${filtered.length} 条文案分析，总消耗 ¥${totalCost.toFixed(2)}，总成交 ${totalConversions} 单，平均线索成本 ¥${avgLeadCost}。
+                            </div>
+                        </div>
+                        <div class="prep-item">
+                            <div class="prep-title" style="margin-bottom: 8px;">理由 (Reason)</div>
+                            <div class="content">
+                                平均创新度 ${avgInnovation}%，平均有效率 ${avgEfficiency}%。${parseFloat(avgInnovation) > 70 
+                                    ? '高创新度文案占比较高，这是转化好的重要原因。' 
+                                    : '创新度有待提升，建议加强内容创新。'}
+                            </div>
+                        </div>
+                        <div class="prep-item">
+                            <div class="prep-title" style="margin-bottom: 8px;">例子 (Example)</div>
+                            <div class="content">
+                                ${filtered.length > 0 
+                                    ? `${codeDict.director[filtered[0].director] || filtered[0].director} 团队的 ${codeDict.contentType[filtered[0].contentType] || filtered[0].contentType} 类型文案表现最佳。`
+                                    : '暂无数据示例。'}
+                            </div>
+                        </div>
+                        <div class="prep-item">
+                            <div class="prep-title" style="margin-bottom: 8px;">结论 (Point)</div>
+                            <div class="content">
+                                建议：1）继续加大高创新度文案投入；2）优化低绩效文案；3）建立标杆文案库，复制成功经验。
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-grid" style="margin-top: 24px;">
+                        <div class="stat-card">
+                            <div class="label">总消耗</div>
+                            <div class="value">¥${totalCost.toFixed(2)}</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="label">总线索量</div>
+                            <div class="value">${totalLeads}</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="label">总成交数</div>
+                            <div class="value">${totalConversions}</div>
+                        </div>
+                        <div class="stat-card warning">
+                            <div class="label">平均线索成本</div>
+                            <div class="value">¥${avgLeadCost}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">平均有效率</div>
+                            <div class="value">${avgEfficiency}%</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="label">平均创新度</div>
+                            <div class="value">${avgInnovation}%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (Object.keys(groupData).length > 0) {
+                let groupHtml = '<div class="card" style="margin-top: 24px;"><h3>📊 分组统计</h3><div class="table-container"><table><thead><tr>';
+                
+                const groupLabels = {
+                    'director': '编导',
+                    'contentType': '内容类型',
+                    'form': '呈现形式',
+                    'duration': '时长'
+                };
+                
+                groupHtml += `<th>${groupLabels[groupBy]}</th><th>文案数量</th><th>总消耗</th><th>总线索</th><th>总成交</th><th>线索成本</th><th>平均有效率</th><th>平均创新度</th></tr></thead><tbody>`;
+                
+                for (const [key, items] of Object.entries(groupData)) {
+                    const name = codeDict[groupBy] ? codeDict[groupBy][key] || key : key;
+                    const groupCost = items.reduce((sum, item) => sum + (item.cost || 0), 0);
+                    const groupLeads = items.reduce((sum, item) => sum + (item.leads || 0), 0);
+                    const groupConversions = items.reduce((sum, item) => sum + (item.conversions || 0), 0);
+                    const groupLeadCost = groupLeads > 0 ? (groupCost / groupLeads).toFixed(2) : '-';
+                    const groupEfficiency = items.length > 0 
+                        ? (items.reduce((sum, item) => sum + (parseFloat(item.efficiency) || 0), 0) / items.length).toFixed(2) 
+                        : 0;
+                    const groupInnovation = items.length > 0 
+                        ? (items.reduce((sum, item) => sum + (item.innovationPercentage || 0), 0) / items.length).toFixed(2) 
+                        : 0;
+                    
+                    groupHtml += `<tr>
+                        <td>${name}</td>
+                        <td>${items.length}</td>
+                        <td>¥${groupCost.toFixed(2)}</td>
+                        <td>${groupLeads}</td>
+                        <td>${groupConversions}</td>
+                        <td>¥${groupLeadCost}</td>
+                        <td>${groupEfficiency}%</td>
+                        <td>${groupInnovation}%</td>
+                    </tr>`;
+                }
+                
+                groupHtml += '</tbody></table></div></div>';
+                resultDiv.innerHTML += groupHtml;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
